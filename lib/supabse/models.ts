@@ -5,7 +5,7 @@ export interface Board {
   created_at: string;
   user_id: string;
   color: string;
-  updateed_at: string;
+  updated_at: string;
 }
 
 export interface Task {
@@ -27,4 +27,5 @@ export interface Column {
   board_id: string;
   created_at: string;
   sort_order: number;
+  user_id: string;
 }

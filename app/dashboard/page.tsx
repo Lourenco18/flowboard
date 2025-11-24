@@ -1,9 +1,18 @@
 "use client";
 import Navbar from "@/components/navbar";
+import { Button } from "@/components/ui/button";
+import { useBoards } from "@/lib/hooks/useBoards";
 import { useUser } from "@clerk/nextjs";
+import { Plus } from "lucide-react";
 
 export default function DashboardPage() {
+
     const { user } = useUser();
+    const { createBoard } = useBoards();
+
+    const handleCreateBoard = async () => {
+        await createBoard({ title: "New Board" });
+    }
     return (
         <div className="min-h-screen bg-gray-50">
             <Navbar />
@@ -15,6 +24,10 @@ export default function DashboardPage() {
                     <p className="text-gray-600">
                         Here's your dashboard where you can manage your projects and settings.
                     </p>
+                    <Button className="w-full sm:w-auto" variant="outline" onClick={handleCreateBoard}>
+                        <Plus className="mr-2 h-4 w-4" />
+                        Create Board
+                    </Button>
                 </div>
             </main>
         </div>
