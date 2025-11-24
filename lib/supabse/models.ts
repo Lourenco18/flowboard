@@ -1,0 +1,30 @@
+export interface Board {
+  id: string;
+  title: string;
+  description: string | null;
+  created_at: string;
+  user_id: string;
+  color: string;
+  updateed_at: string;
+}
+
+export interface Task {
+  id: string;
+  column_id: string;
+  title: string;
+  description: string | null;
+  assigned: string | null;
+  due_date: string | null;
+  priority: "low" | "medium" | "high";
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Column {
+  id: string;
+  title: string;
+  board_id: string;
+  created_at: string;
+  sort_order: number;
+}

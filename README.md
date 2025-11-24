@@ -2,4 +2,4 @@ npm install @supabase/ssr @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities @ra
 tw-animate-css
 npx shadcn@latest init
 
-supabase pass:RhVwEwC7w96SwP97e
+supabase pass:aHUGtUiUC4UTEe3G
