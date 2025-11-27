@@ -233,7 +233,7 @@ export default function DashboardPage() {
                                     </Card>
                                 </Link>
                             ))}
-                            <Card className="border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors cursor-pointer  group  ">
+                            <Card onClick={handleCreateBoard} className="border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors cursor-pointer  group  ">
                                 <CardContent className="p-4 sm:p-6 flex flex-col items-center justify-center h-full min-h-[200px]" >
 
                                     <PlusIcon className="text-gray-600 h-6 w-6 sm:h-8 sm:w-8 group-hover:text-blue-600 mb-2" />
@@ -271,7 +271,7 @@ export default function DashboardPage() {
                                     </Link>
                                 </div>
                             ))}
-                            <Card className="mt-4 border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors cursor-pointer  group  ">
+                            <Card onClick={handleCreateBoard} className="mt-4 border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors cursor-pointer  group  ">
                                 <CardContent className="p-4 sm:p-6 flex flex-col items-center justify-center h-full min-h-[200px]" >
 
                                     <PlusIcon className="text-gray-600 h-6 w-6 sm:h-8 sm:w-8 group-hover:text-blue-600 mb-2" />
@@ -279,7 +279,7 @@ export default function DashboardPage() {
                                 </CardContent>
                             </Card>
                         </div>
-                    )};
+                    )}
 
 
 
