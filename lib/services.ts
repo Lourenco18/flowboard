@@ -2,9 +2,10 @@
 import { Board, Column } from "./supabse/models";
 import SupabaseClient from "@supabase/supabase-js/dist/module/SupabaseClient";
 
-//const supabase = createClient();
+//Board service with CRUD
 
 export const boardService = {
+    //get board
     async getBoard(supabase: SupabaseClient, boardId: string): Promise<Board> {
         const { data, error } = await supabase
             .from("boards")
@@ -14,6 +15,18 @@ export const boardService = {
         if (error) throw error;
         return data;
     },
+
+    //delete board
+    async deleteBoard(supabase: SupabaseClient, boardId: string): Promise<Board> {
+        const { data, error } = await supabase
+            .from("boards")
+            .select("*")
+            .eq("id", boardId)
+            .single();
+        if (error) throw error;
+        return data;
+    },
+    //get all boards for user
     async getBoards(supabase: SupabaseClient, userId: string): Promise<Board[]> {
         const { data, error } = await supabase
             .from("boards")
@@ -23,7 +36,7 @@ export const boardService = {
         if (error) throw error;
         return data || [];
     },
-
+    //create board
     async createBoard(supabase: SupabaseClient,
         board: Omit<Board, "id" | "created_at" | "updated_at">
     ): Promise<Board> {
@@ -35,7 +48,7 @@ export const boardService = {
         if (error) throw error;
         return data;
     },
-
+    //update board
     async updateBoard(supabase: SupabaseClient,
         boardId: string,
         updates: Partial<Board>
@@ -51,8 +64,11 @@ export const boardService = {
     },
 };
 
-export const columnService = {
 
+
+//Column service with CRUD
+export const columnService = {
+    // get columns for a board
     async getColumns(supabase: SupabaseClient, boardId: string): Promise<Column[]> {
         const { data, error } = await supabase
             .from("columns")
@@ -62,6 +78,7 @@ export const columnService = {
         if (error) throw error;
         return data || [];
     },
+
     async createColumn(supabase: SupabaseClient,
         column: Omit<Column, "id" | "created_at">
     ): Promise<Column> {
@@ -76,6 +93,7 @@ export const columnService = {
 };
 
 export const boardDataService = {
+    //get board with columns
     async getBoardWithColumns(supabase: SupabaseClient, boardId: string) {
         const [board, columns] = await Promise.all([
             boardService.getBoard(supabase, boardId),
@@ -87,8 +105,8 @@ export const boardDataService = {
     },
 
 
-
-    async createBoadWithDefaultColumns(supabase: SupabaseClient, boardData: {
+    //Create board and their columns
+    async createBoardWithDefaultColumns(supabase: SupabaseClient, boardData: {
         title: string;
         userId: string;
         description?: string;

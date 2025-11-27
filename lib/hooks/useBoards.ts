@@ -38,7 +38,7 @@ export function useBoards() {
     }) {
         if (!user) throw new Error("User not authenticated");
         try {
-            const newBoard = await boardDataService.createBoadWithDefaultColumns(supabase!, {
+            const newBoard = await boardDataService.createBoardWithDefaultColumns(supabase!, {
                 ...boardData,
                 userId: user?.id,
 
