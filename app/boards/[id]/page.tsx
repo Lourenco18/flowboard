@@ -5,6 +5,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 export default function BoardPage() {
@@ -13,8 +14,9 @@ export default function BoardPage() {
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [newTitle, setNewTitle] = useState("");
+    const [newDescription, setNewDescription] = useState("");
     const [newColor, setNewColor] = useState("");
-
+    //function to update board 
     async function handleUpdateBoard(e: React.FormEvent) {
         e.preventDefault();
         if (!newTitle.trim() || !board)
@@ -24,6 +26,7 @@ export default function BoardPage() {
             await updateBoard(board.id, {
                 title: newTitle.trim(),
                 color: newColor || board.color,
+                description: newDescription || board.description,
             });
             setIsEditingTitle(false);
 
@@ -31,12 +34,14 @@ export default function BoardPage() {
 
         }
     }
+
     return <div className="min-h-screen bg-gray-50">
+        {/* navbar */}
         <Navbar boardTitle={board?.title} oneEditBoard={() => {
             setIsEditingTitle(true);
             setNewTitle(board?.title ?? "");
+            setNewDescription(board?.description ?? "");
             setNewColor(board?.color ?? "");
-
         }}
             onFilterClick={() => setIsFilterOpen(true)}
             filterCount={2}
@@ -55,6 +60,28 @@ export default function BoardPage() {
                         </Input>
                     </div>
                     <div className="space-y-2">
+                        <Label htmlFor="boardDescription">Description</Label>
+
+                        <div className="relative">
+                            <Textarea
+                                maxLength={200}
+                                id="boardDescription"
+                                placeholder="Enter Board description"
+                                required
+                                value={newDescription}
+                                onChange={(e) => setNewDescription(e.target.value)}
+                                className="pr-12" // espaço para o contador não tapar o texto
+                            />
+
+                            {/* contador */}
+                            <span className="absolute bottom-2 right-2 text-xs text-gray-500">
+                                {newDescription.length}/120
+                            </span>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        {/* Color selection */}
                         <Label htmlFor="boardColor">Board Color</Label>
                         <div className="grid grid-cols-4 sm:grid-cols-6 gap-2">
                             {["bg-blue-500",
@@ -79,6 +106,7 @@ export default function BoardPage() {
                                 />
                             ))}
                         </div>
+
                         <div className="flex justify-end space-x-2 mt-4">
                             <Button type="button" variant="outline" onClick={() => setIsEditingTitle(false)}>
                                 Cancel

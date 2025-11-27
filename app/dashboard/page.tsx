@@ -218,6 +218,7 @@ export default function DashboardPage() {
 
 
                     </div>
+
                     {/* Boards List */}
                     {boards.length === 0 ? (
                         <div> No boards yet</div>

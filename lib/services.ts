@@ -19,7 +19,7 @@ export const boardService = {
             .from("boards")
             .select("*")
             .eq("user_id", userId)
-            .order("created_at", { ascending: false });
+            .order("updated_at", { ascending: false });
         if (error) throw error;
         return data || [];
     },
