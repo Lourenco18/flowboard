@@ -111,16 +111,16 @@ export default function DashboardPage() {
                             <p className="text-gray-600">Manage your boards and projects here.</p>
                         </div>
 
+
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0">
+
                             <div
-                                className="relative flex items-center bg-white border p-1 rounded-lg mr-2 w-full max-w-[200px]"
-                                onMouseLeave={() => setHovered(null)} // volta ao estado real
+                                className="relative flex items-center bg-white border p-1 rounded-lg mr-2 w-full max-w-[260px]"
+                                onMouseLeave={() => setHovered(null)}
                             >
                                 {/* highlight animado */}
                                 <div
-                                    className={`
-      absolute top-1 bottom-1 left-1 rounded-md bg-black transition-all duration-450
-    `}
+                                    className="absolute top-1 bottom-1 left-1 rounded-md bg-black transition-all duration-450"
                                     style={{
                                         width: "calc(50% - 4px)",
                                         transform:
@@ -136,7 +136,7 @@ export default function DashboardPage() {
 
                                 {/* GRID */}
                                 <Button
-                                    className="cursor-pointer relative z-10 flex-1"
+                                    className="cursor-pointer relative z-10 flex-1 flex items-center justify-center gap-1"
                                     variant="ghost"
                                     size="sm"
                                     onMouseEnter={() => setHovered("grid")}
@@ -144,19 +144,27 @@ export default function DashboardPage() {
                                 >
                                     <Grid3x3
                                         className={`
-    transition-colors duration-300
-    ${(hovered === "grid" || (hovered === null && viewMode === "grid"))
+        transition-colors duration-300
+        ${(hovered === "grid" || (hovered === null && viewMode === "grid"))
                                                 ? "text-gray-100"
-                                                : "text-gray-900"
-                                            }
-  `}
+                                                : "text-gray-900"}
+      `}
                                     />
-
+                                    <span
+                                        className={`
+        transition-colors duration-300 text-sm hidden sm:inline
+        ${(hovered === "grid" || (hovered === null && viewMode === "grid"))
+                                                ? "text-gray-100"
+                                                : "text-gray-900"}
+      `}
+                                    >
+                                        Grid
+                                    </span>
                                 </Button>
 
                                 {/* LIST */}
                                 <Button
-                                    className="cursor-pointer relative z-10 flex-1"
+                                    className="cursor-pointer relative z-10 flex-1 flex items-center justify-center gap-1"
                                     variant="ghost"
                                     size="sm"
                                     onMouseEnter={() => setHovered("list")}
@@ -164,16 +172,25 @@ export default function DashboardPage() {
                                 >
                                     <List
                                         className={`
-    transition-colors duration-300
-    ${(hovered === "list" || (hovered === null && viewMode === "list"))
+        transition-colors duration-300
+        ${(hovered === "list" || (hovered === null && viewMode === "list"))
                                                 ? "text-gray-100"
-                                                : "text-gray-900"
-                                            }
-  `}
+                                                : "text-gray-900"}
+      `}
                                     />
-
+                                    <span
+                                        className={`
+        transition-colors duration-300 text-sm hidden sm:inline
+        ${(hovered === "list" || (hovered === null && viewMode === "list"))
+                                                ? "text-gray-100"
+                                                : "text-gray-900"}
+      `}
+                                    >
+                                        List
+                                    </span>
                                 </Button>
                             </div>
+
 
                             <span className=" hover:shadow-lg transition-shadow cursor-pointer border p-1 rounded-lg bg-white flex items-center justify-center mr-2">
                                 <Button size="sm" className="flex items-center justify-center gap-2 " variant="ghost">
