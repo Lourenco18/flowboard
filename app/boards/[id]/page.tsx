@@ -11,8 +11,9 @@ export default function BoardPage() {
     const { id } = useParams<{ id: string }>();
     const { board, updateBoard } = useBoard(id);
     const [isEditingTitle, setIsEditingTitle] = useState(false);
+    const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [newTitle, setNewTitle] = useState("");
-    const [newColor, setNewColor] = useState("f");
+    const [newColor, setNewColor] = useState("");
 
     async function handleUpdateBoard(e: React.FormEvent) {
         e.preventDefault();
@@ -35,7 +36,11 @@ export default function BoardPage() {
             setIsEditingTitle(true);
             setNewTitle(board?.title ?? "");
             setNewColor(board?.color ?? "");
-        }} />
+
+        }}
+            onFilterClick={() => setIsFilterOpen(true)}
+            filterCount={2}
+        />
         <Dialog open={isEditingTitle} onOpenChange={setIsEditingTitle}>
             <DialogContent className="w-[95vw] max-w-425px mx-auto" >
                 <DialogHeader>
@@ -64,9 +69,9 @@ export default function BoardPage() {
                                 "bg-gray-500",
                                 "bg-cyan-500",
                                 "bg-emerald-500",
-                            ].map((color) => (
+                            ].map((color, key) => (
                                 <button
-                                    key={color}
+                                    key={key}
                                     type="button"
                                     aria-label={color}
                                     className={`w-8 h-8 rounded-full ${color} ${color === newColor ? "ring-2 ring-odffset-2 ring-gray-900" : ""}`}
@@ -91,5 +96,51 @@ export default function BoardPage() {
             </DialogContent>
         </Dialog>
 
-    </div>;
+        <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
+            <DialogContent className="w-[95vw] max-w-425px mx-auto" >
+                <DialogHeader>
+                    <DialogTitle>Filter Tasks</DialogTitle>
+                    <p className="text-sm text-gray-600">Filter tasks by priority, status, or assignee.</p>
+                </DialogHeader>
+                <div className="space-y-4 ">
+                    <div className="space-y-2 ">
+                        <Label>
+                            Priority
+                        </Label>
+                        <div className="flex flex-wrap gap-2">
+                            {["low", "medium", "high"].map((priority, key) => (
+                                <Button key={key} className="" variant={"outline"} size="sm">
+                                    {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                                </Button>
+                            ))}
+                        </div>
+                    </div>
+                    {/*}  <div className="space-y-2 ">
+                        <Label>
+                            Assignee
+                        </Label>
+                        <div className="flex flex-wrap gap-2">
+                            {["low", "medium", "high"].map((priority, key) => (
+                                <Button key={key} className="" variant={"outline"} size="sm">
+                                    {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                                </Button>
+                            ))}
+                        </div>
+                    </div>*/}
+                    <div className="space-y-2 ">
+                        <Label>
+                            Due Date
+                        </Label>
+                        <Input type="date" />
+                    </div>
+                    <div className="flex justify-between pt-4">
+                        <Button type="button" variant={"outline"}>Clear Filter</Button>
+                        <Button type="button" onClick={() => setIsFilterOpen(false)}>Apply Filters</Button>
+                    </div>
+
+                </div>
+            </DialogContent>
+        </Dialog>
+
+    </div>
 }
