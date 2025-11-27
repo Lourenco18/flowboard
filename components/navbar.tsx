@@ -1,14 +1,18 @@
 "use client";
 
 import { SignInButton, SignUpButton, UserButton, useUser } from "@clerk/nextjs";
-import { ArrowRight, Trello } from "lucide-react";
+import { ArrowLeft, ArrowRight, MoreHorizontal, Trello } from "lucide-react";
 import { Button } from "./ui/button";
 import { Arrow } from "@radix-ui/react-select";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+interface Props {
 
-export default function Navbar() {
+    boardTitle?: string;
+    oneEditBoard?: () => void;
+}
+export default function Navbar({ boardTitle, oneEditBoard }: Props) {
     const { isSignedIn, user } = useUser();
     const pathname = usePathname();
 
@@ -26,6 +30,33 @@ export default function Navbar() {
                 <div className="flex items-center space-x-2 sm:space-x-4">
                     <UserButton />
                 </div>
+            </div>
+        </header>;
+    }
+    if (isBoardsPage) {
+        return <header className="border-b bg-white sticky top-0 z-50">
+            <div className="container mx-auto px-4 py-3 sm:py-4 ">
+                <div className="flex item-center justify-between">
+                    <div className="flex items.center space-x-2 sm:space-x-4 min-w-0">
+                        <Link href="/dashboard" className=" flex items-center space-x-1 sm:space-x-2 flez-shrink-0">
+                            <ArrowLeft className="h-4 w-4 sm:h-5 w-5 text-gray-500 hover:text-gray-900" />
+                            <span className=" hidden sm:inline text-gray-500 hover:text-gray-900">Back to Dashboard</span>
+                            <span className="sm:hidden text-gray-500 hover:text-gray-900">Back</span>
+                        </Link>
+                        <div className="h-4 sm:h-6 w-px bg-gray-300 hidden sm:block" />
+                        <div className="flex items-center space-x-1 sm:space-x-2 min-w-0">
+                            <Trello className="text-blue-600" />
+                            <div className="text-gray-900 text-lg items-center space-x-1 sm:space-x-2 min-w-0" >
+                                <span className="text-lg font-bold text-gray-900 truncate">{boardTitle}</span>
+                                {oneEditBoard && (
+                                    <Button variant="ghost" size="sm" className="h-7 w-7 flex-shrink-0 p-0" onClick={oneEditBoard}><MoreHorizontal />
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
         </header>;
     }

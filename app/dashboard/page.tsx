@@ -176,16 +176,18 @@ export default function DashboardPage() {
                             </div>
 
                             <span className=" hover:shadow-lg transition-shadow cursor-pointer border p-1 rounded-lg bg-white flex items-center justify-center mr-2">
-                                <Button size="sm" className="flex items-center justify-center gap-2">
+                                <Button size="sm" className="flex items-center justify-center gap-2 " variant="ghost">
                                     <Filter className="text-gray-900" />
                                     <span className="text-gray-900">Filter</span>
                                 </Button>
                             </span>
+                            <span className=" hover:shadow-lg transition-shadow cursor-pointer border p-1 rounded-lg bg-white flex items-center justify-center mr-2">
 
-                            <Button className="hover:shadow-lg transition-shadow cursor-pointer" onClick={handleCreateBoard} variant="outline">
-                                <PlusIcon className="mr-2 h-4 w-4" />
-                                Create Board
-                            </Button>
+                                <Button size="sm" className="flex items-center justify-center gap-2 " variant="ghost" onClick={handleCreateBoard}>
+                                    <PlusIcon className="text-gray-900" />
+                                    <span className="text-gray-900">Create Board</span>
+                                </Button>
+                            </span>
                         </div>
                     </div>
                     {/* Search Boards */}
@@ -282,7 +284,7 @@ export default function DashboardPage() {
 
 
                 </div>
-            </main>
-        </div>
+            </main >
+        </div >
     );
 }
