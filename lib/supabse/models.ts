@@ -29,3 +29,14 @@ export interface Column {
   sort_order: number;
   user_id: string;
 }
+
+export interface Team {
+  id: string;
+  name: string;
+  creator_id: string;
+  created_at: string;
+  description: string | null;
+  type: string;
+  color: string;
+
+}

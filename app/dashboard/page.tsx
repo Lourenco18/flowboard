@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useBoards } from "@/lib/hooks/useBoards";
+
+// import { useTeams } from "@/lib/hooks/useTeams";
 import { useUser } from "@clerk/nextjs";
 import { Loader2, Plus, Rocket, Trello, Grid3x3, List, Filter, PlusIcon, Search } from "lucide-react";
 import Link from "next/link";
@@ -15,9 +17,19 @@ export default function DashboardPage() {
 
     const { user } = useUser();
     const { createBoard, boards, loading, error } = useBoards();
+    //  const { createTeam, teams, loading, error } = useTeams();
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
+    const isSameDay = (a?: string | null, b?: string | null) => {
+        if (!a || !b) return false;
+        const da = new Date(a);
+        const db = new Date(b);
+        return da.getFullYear() === db.getFullYear() && da.getMonth() === db.getMonth() && da.getDate() === db.getDate();
+    }
     const handleCreateBoard = async () => {
         await createBoard({ title: "New Board" });
+    }
+    const handleCreateTeam = async () => {
+        await createBoard({ title: "New Team" });
     }
     if (loading) {
         return <div><Loader2 /><span>Loading...</span></div>;
@@ -90,7 +102,7 @@ export default function DashboardPage() {
                     <Card>
                         <CardContent className="p-4 sm:p-6">
                             <div className="flex items-center justify-between">
-                                <div><p className="text-gray-900 text-xs sm:text-sm font-medium ">Total Boards</p>
+                                <div><p className="text-gray-900 text-xs sm:text-sm font-medium ">Total Teams</p>
                                     <p className="text-gray-900 text-xl sm:text-2xl font-bold">{boards.length}</p>
                                 </div>
                                 <div className="h-10 w-10 sm:h-12 sm:w-12 bg-blue-100 rounded-lg  flex items-center justify-center">
@@ -229,13 +241,15 @@ export default function DashboardPage() {
                                 <Link href={`/boards/${board.id}`} key={key}>
 
                                     <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-                                        <CardHeader className="pb-3">
+                                        <CardHeader className="pb-0">
                                             <div className="flex items-center justify-between">
                                                 <div className={`w-4 h-4 ${board.color} rounded`} />
-                                                <Badge variant="secondary" className="text-xs text-gray-900 bg-gray-100" >New</Badge>
+                                                {isSameDay(board.created_at, board.updated_at) && (
+                                                    <Badge variant="secondary" className="text-xs text-gray-900 bg-gray-100">New</Badge>
+                                                )}
                                             </div>
                                         </CardHeader>
-                                        <CardContent className="p-4 sm:p-6">
+                                        <CardContent className="pl-4 sm:pl-6">
                                             <CardTitle className="text-base sm:text-lg mb-2  text-gray-900">{board.title}</CardTitle>
                                             <CardDescription className="text-sm mb-4 text-gray-700">{board.description}</CardDescription>
                                             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm space-y-1 sm:space-y-0">
@@ -250,14 +264,9 @@ export default function DashboardPage() {
 
                                     </Card>
                                 </Link>
-                            ))}
-                            <Card onClick={handleCreateBoard} className="border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors cursor-pointer  group  ">
-                                <CardContent className="p-4 sm:p-6 flex flex-col items-center justify-center h-full min-h-[200px]" >
 
-                                    <PlusIcon className="text-gray-600 h-6 w-6 sm:h-8 sm:w-8 group-hover:text-blue-600 mb-2" />
-                                    <p className="text-gray-600 text-sm sm:text-base group-hover:text-blue-600">Create New Board</p>
-                                </CardContent>
-                            </Card>
+                            ))}
+
                         </div>
                     ) : (
                         <div >
@@ -266,13 +275,15 @@ export default function DashboardPage() {
                                     <Link href={`/boards/${board.id}`} key={key}>
 
                                         <Card className="hover:shadow-lg transition-shadow cursor-pointer group">
-                                            <CardHeader className="pb-3">
+                                            <CardHeader className="pb-0">
                                                 <div className="flex items-center justify-between">
                                                     <div className={`w-4 h-4 ${board.color} rounded`} />
-                                                    <Badge variant="secondary" className="text-xs text-gray-900 bg-gray-100" >New</Badge>
+                                                    {isSameDay(board.created_at, board.updated_at) && (
+                                                        <Badge variant="secondary" className="text-xs text-gray-900 bg-gray-100">New</Badge>
+                                                    )}
                                                 </div>
                                             </CardHeader>
-                                            <CardContent className="p-4 sm:p-6">
+                                            <CardContent className="pl-4 sm:pl-6">
                                                 <CardTitle className="text-base sm:text-lg mb-2  text-gray-900">{board.title}</CardTitle>
                                                 <CardDescription className="text-sm mb-4 text-gray-700">{board.description}</CardDescription>
                                                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between text-sm space-y-1 sm:space-y-0">
@@ -289,19 +300,15 @@ export default function DashboardPage() {
                                     </Link>
                                 </div>
                             ))}
-                            <Card onClick={handleCreateBoard} className="mt-4 border-2 border-dashed border-gray-300 hover:border-blue-400 transition-colors cursor-pointer  group  ">
-                                <CardContent className="p-4 sm:p-6 flex flex-col items-center justify-center h-full min-h-[200px]" >
 
-                                    <PlusIcon className="text-gray-600 h-6 w-6 sm:h-8 sm:w-8 group-hover:text-blue-600 mb-2" />
-                                    <p className="text-gray-600 text-sm sm:text-base group-hover:text-blue-600">Create New Board</p>
-                                </CardContent>
-                            </Card>
                         </div>
                     )}
 
 
 
                 </div>
+                {/* Teams  List */}
+
             </main >
         </div >
     );
