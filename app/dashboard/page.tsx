@@ -6,7 +6,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Input } from "@/components/ui/input";
 import { useBoards } from "@/lib/hooks/useBoards";
 
-// import { useTeams } from "@/lib/hooks/useTeams";
+
 import { useUser } from "@clerk/nextjs";
 import { Loader2, Plus, Rocket, Trello, Grid3x3, List, Filter, PlusIcon, Search } from "lucide-react";
 import Link from "next/link";
@@ -17,7 +17,7 @@ export default function DashboardPage() {
 
     const { user } = useUser();
     const { createBoard, boards, loading, error } = useBoards();
-    //  const { createTeam, teams, loading, error } = useTeams();
+
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const isSameDay = (a?: string | null, b?: string | null) => {
         if (!a || !b) return false;
