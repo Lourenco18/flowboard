@@ -7,6 +7,10 @@ export interface Board {
   color: string;
   updated_at: string;
 }
+export type ColumnWithTasks = Column & {
+  tasks: Task[]
+};
+
 
 export interface Task {
   id: string;

@@ -2,8 +2,9 @@ import { error } from "console";
 import { boardDataService, boardService } from "../services";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import { Board, Column } from "../supabse/models";
+import { Board, Column, ColumnWithTasks } from "../supabse/models";
 import { useSupabase } from "../supabse/SupabaseProvider";
+
 
 export function useBoards() {
     const { user } = useUser();
@@ -55,7 +56,7 @@ export function useBoard(boardId: string) {
 
     const { supabase } = useSupabase();
     const [board, setBoard] = useState<Board | null>(null);
-    const [columns, setColumns] = useState<Column[]>([]);
+    const [columns, setColumns] = useState<ColumnWithTasks[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     useEffect(() => {
