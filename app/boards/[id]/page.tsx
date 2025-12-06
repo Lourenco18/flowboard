@@ -6,16 +6,60 @@ import { useParams } from "next/navigation";
 import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Description, DialogTrigger } from "@radix-ui/react-dialog";
+import { MoreHorizontal, PlusIcon } from "lucide-react";
+import { SelectLabel } from "@/components/ui/select";
+import { ColumnWithTasks } from "@/lib/supabse/models";
+import { create } from "domain";
+function Column({
+    column,
+    children,
+    onCreateTask,
+    onEditColumn,
+
+}: {
+    column: ColumnWithTasks;
+    children?: React.ReactNode;
+    onCreateTask: (taskData: any) => Promise<void>;
+    onEditColumn: (column: ColumnWithTasks) => void;
+
+}) {
+    return (
+        <div className="w-full lg:flex-shrink-0 lg:w-80">
+            <div className="bg-white rounded-lg shadow-sm border">
+                {/* Column header */}
+                <div className="p-3 sm:p-4 border-b">
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-2 min-w-0">
+                            <h3 className="font-semibold text-gray-900 text-sm sm:text-base truncate">{column.title}</h3>
+                            <Badge variant="secondary" className="text-xs flex-shrink-0">{column.tasks.length}</Badge>
+                        </div>
+                        <Button variant="ghost" size="sm" className="flex-shrink-0">
+                            <MoreHorizontal />
+                        </Button>
+                    </div>
+                </div>
+                {/* Column content */}
+                <div className="p-2">
+                    {children}
+                </div>
+            </div>
+        </div>
+    )
+}
 export default function BoardPage() {
     const { id } = useParams<{ id: string }>();
-    const { board, updateBoard, columns } = useBoard(id);
+    const { board, updateBoard, columns, createRealTask } = useBoard(id);
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [newTitle, setNewTitle] = useState("");
     const [newDescription, setNewDescription] = useState("");
     const [newColor, setNewColor] = useState("");
+    const team_id = board?.team_id ?? null;
     //function to update board 
     async function handleUpdateBoard(e: React.FormEvent) {
         e.preventDefault();
@@ -35,6 +79,37 @@ export default function BoardPage() {
         }
     }
 
+    async function createTask(taskData: {
+        title: string;
+        description?: string;
+        assignee?: string;
+        priority: "low" | "medium" | "high";
+        due_date?: string;
+    }) {
+        const targetColumn = columns[0]
+        if (!targetColumn) {
+            throw new Error("No columns available to add the task.");
+        }
+        await createRealTask(targetColumn.id, taskData);
+    }
+
+    async function handleCreateTask(e: any
+    ) {
+        e.preventDefault();
+        const formData = new FormData(e.currentTarget);
+        const taskData = {
+            title: formData.get("title") as string,
+            description: (formData.get("description") as string) || undefined,
+            assignee: team_id ? (formData.get("assignee") as string) : undefined,
+            priority: (formData.get("priority") as "low" | "medium" | "high") || "medium",
+            due_date: (formData.get("dueDate") as string) || undefined,
+        }
+        console.log("TASK DATA BEING SENT:", taskData);
+
+        if (taskData.title.trim()) {
+            await createTask(taskData);
+        }
+    }
     return <div className="min-h-screen bg-gray-50">
         {/* navbar */}
         <Navbar boardTitle={board?.title} oneEditBoard={() => {
@@ -47,7 +122,9 @@ export default function BoardPage() {
             filterCount={2}
         />
         <Dialog open={isEditingTitle} onOpenChange={setIsEditingTitle}>
-            <DialogContent className="w-[95vw] max-w-425px mx-auto" >
+            <DialogContent aria-describedby={undefined} className="max-h-[85vh] overflow-y-auto">
+
+
                 <DialogHeader>
                     <DialogTitle>Edit Board</DialogTitle>
 
@@ -70,12 +147,16 @@ export default function BoardPage() {
                                 required
                                 value={newDescription}
                                 onChange={(e) => setNewDescription(e.target.value)}
-                                className="pr-12" // espaço para o contador não tapar o texto
+                                className="pr-12 resize-none max-h-40 overflow-y-auto whitespace-pre-wrap break-words break-all"
+
                             />
+
+
+
 
                             {/* contador */}
                             <span className="absolute bottom-2 right-2 text-xs text-gray-500">
-                                {newDescription.length}/120
+                                {newDescription.length}/200
                             </span>
                         </div>
                     </div>
@@ -125,7 +206,8 @@ export default function BoardPage() {
         </Dialog>
 
         <Dialog open={isFilterOpen} onOpenChange={setIsFilterOpen}>
-            <DialogContent className="w-[95vw] max-w-425px mx-auto" >
+            <DialogContent aria-describedby={undefined} className="w-[95vw] max-w-425px mx-auto">
+
                 <DialogHeader>
                     <DialogTitle>Filter Tasks</DialogTitle>
                     <p className="text-sm text-gray-600">Filter tasks by priority, status, or assignee.</p>
@@ -169,13 +251,146 @@ export default function BoardPage() {
             </DialogContent>
         </Dialog>
         {/* Board content */}
-        <main>
+        <main className="container mx-auto px-2 sm:px-4 py-4  sm:py-6 ">
             {/*stats*/}
-            <div>
-                <span>
-                    Total Tasks:
-                </span>
-                {columns.reduce((sum, col) => sum + col.tasks.length, 0)})}
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 space-y-4 sm:space-y-0">
+                <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+                    <div className="text-sm text-gray-600">
+                        <span className="font-medium">Total Tasks: </span>
+                        {columns.reduce((sum, col) => sum + col.tasks.length, 0)}
+                    </div>
+
+                </div>
+                { /* Add task dialog*/}
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button className="w-full sm:w-auto">
+                            <PlusIcon className="" />
+                            Add Task
+                        </Button>
+
+                    </DialogTrigger>
+                    <DialogContent className="w-[95vw] max-w-425px mx-auto" aria-describedby={undefined} >
+                        <DialogHeader>
+                            <DialogTitle>Create New Task</DialogTitle>
+                            <p className="text-sm text-gray-600">Add a task to the board</p>
+                        </DialogHeader>
+                        <form className="space-y-4" onSubmit={handleCreateTask}>
+                            <div className="space-y-2">
+                                <Label>
+                                    Title *
+                                </Label>
+                                <Input placeholder="Enter task title" id="title" name="title" required />
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label htmlFor="description">Description</Label>
+
+                                <div className="relative">
+                                    <Textarea
+                                        maxLength={200}
+                                        id="description"
+                                        name="description"
+                                        placeholder="Enter Board description"
+                                        required
+                                        value={newDescription}
+                                        onChange={(e) => setNewDescription(e.target.value)}
+                                        className="pr-12 resize-none max-h-40 overflow-y-auto whitespace-pre-wrap break-words break-all"
+
+                                    />
+                                    <span className="absolute bottom-2 right-2 text-xs text-gray-500">
+                                        {newDescription.length}/200
+                                    </span>
+                                </div>
+                            </div>
+
+                            {team_id !== null && (
+                                <div>
+                                    <Label>Assignee</Label>
+                                    <Input
+                                        placeholder="Who should do this?"
+                                        id="assignee"
+                                        name="assignee"
+                                        required
+                                    />
+                                </div>
+                            )}
+
+                            <div className="space-y-2">
+                                <Label>
+                                    Priority
+                                </Label>
+                                <Select name="priority" defaultValue="medium">
+                                    <SelectTrigger>
+                                        <SelectValue>
+
+                                        </SelectValue>
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {["low", "medium", "high"].map((priority, key) => (
+                                            <SelectItem key={key} value={priority}>
+                                                {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                                            </SelectItem>
+                                        ))}
+                                    </SelectContent>
+
+                                </Select>
+
+                            </div>
+
+                            <div className="space-y-2">
+                                <Label>
+                                    Due Date
+                                </Label>
+                                <Input type="date" id="dueDate" name="dueDate" >
+                                </Input>
+                            </div>
+
+                            <div className="flex justify-end space-x-2 mt-4">
+
+                                <Button type="submit">
+                                    Create Task
+                                </Button>
+
+                            </div>
+                        </form>
+                    </DialogContent>
+                </Dialog>
+            </div>
+            {/* Columns */}
+            <div className="
+  flex flex-col
+  lg:flex-row
+  lg:space-x-6
+  lg:overflow-x-auto
+  lg:pb-6
+  lg:px-2
+  lg:mx-2
+  lg:[&::-webkit-scrollbar]:h-2
+  lg:[&::-webkit-scrollbar-track]:bg-gray-100
+  lg:[&::-webkit-scrollbar-thumb]:bg-gray-300
+  lg:[&::-webkit-scrollbar-thumb]:rounded-full
+  space-y-4
+  lg:space-y-0
+">
+
+                {columns.map((column, key) => (
+                    <Column
+                        key={key}
+                        column={column}
+                        onCreateTask={createTask}
+                        onEditColumn={() => { }}
+                    >
+                        <div className="space-y-3 ">
+                            {column.tasks.map((task, key) => (
+                                <div key={key} className="p-2 mb-2 bg-gray-100 rounded-md shadow-sm">
+                                    {task.title}
+                                </div>
+                            ))}
+                        </div>
+                    </Column>
+
+                ))}
             </div>
         </main>
 

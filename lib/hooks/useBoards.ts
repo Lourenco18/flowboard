@@ -1,8 +1,8 @@
 import { error } from "console";
-import { boardDataService, boardService } from "../services";
+import { boardDataService, boardService, taskService } from "../services";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
-import { Board, Column, ColumnWithTasks } from "../supabse/models";
+import { Board, ColumnWithTasks } from "../supabse/models";
 import { useSupabase } from "../supabse/SupabaseProvider";
 
 
@@ -70,7 +70,7 @@ export function useBoard(boardId: string) {
             setError(null);
             const data = await boardDataService.getBoardWithColumns(supabase!, boardId);
             setBoard(data.board);
-            setColumns(data.columns);
+            setColumns(data.columnsWithTasks);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Failde to load boards");
 
@@ -93,8 +93,36 @@ export function useBoard(boardId: string) {
 
         }
     }
+    async function createRealTask(
+        columnId: string,
+        taskData: {
+            title: string;
+            description?: string;
+            assignee?: string;
+            priority: "low" | "medium" | "high";
+            due_date?: string;
+        }
+    ) {
+        try {
+            const newTask = await taskService.createTask(supabase!, {
+                column_id: columnId,
+                title: taskData.title,
+                description: taskData.description || null,
+                assignee: taskData.assignee || null,
+                priority: taskData.priority,
+                due_date: taskData.due_date || null,
+                sort_order: columns.find(col => col.id === columnId)?.tasks.length || 0,
+            });
+            setColumns((prev) => prev.map((col) => col.id === columnId ? { ...col, tasks: [...col.tasks, newTask] } : col));
+            return newTask;
+        } catch (err) {
+            console.error("CREATE REAL TASK ERROR:", err);
+            setError(err instanceof Error ? err.message : "Failed to create task");
+        }
 
+
+    }
     return {
-        board, columns, loading, error, updateBoard
+        board, columns, loading, error, updateBoard, createRealTask
     };
 }

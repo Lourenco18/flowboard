@@ -6,6 +6,7 @@ export interface Board {
   user_id: string;
   color: string;
   updated_at: string;
+  team_id: string | null;
 }
 export type ColumnWithTasks = Column & {
   tasks: Task[]
@@ -17,7 +18,7 @@ export interface Task {
   column_id: string;
   title: string;
   description: string | null;
-  assigned: string | null;
+  assignee: string | null;
   due_date: string | null;
   priority: "low" | "medium" | "high";
   sort_order: number;

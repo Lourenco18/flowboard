@@ -77,7 +77,7 @@ export const boardDataService = {
             ...column,
             tasks: tasks.filter((task) => task.column_id === column.id),
         }));
-        return { board, columns: columnsWithTasks };
+        return { board, columnsWithTasks };
     },
 
 
@@ -94,6 +94,7 @@ export const boardDataService = {
             description: boardData.description || null,
             color: boardData.color || "bg-blue-500",
             user_id: boardData.userId,
+            team_id: null,
         });
         const defaultColumns = [
             { title: "To Do", sort_order: 1 },
@@ -159,6 +160,26 @@ export const taskService = {
         return data || [];
     },
 
+    async createTask(supabase: SupabaseClient,
+        task: Omit<Task, "id" | "created_at" | "updated_at">
+    ): Promise<Task> {
+        const { data, error } = await supabase
+            .from("tasks")
+            .insert(task)
+            .select()
+            .single();
+
+        if (error) {
+            console.error("SUPABASE TASK INSERT ERROR:", error, {
+                sentTaskData: task
+            });
+            throw error;
+        }
+
+        console.log("SUPABASE TASK INSERT SUCCESS:", data);
+        return data;
+
+    },
 
 };
 
