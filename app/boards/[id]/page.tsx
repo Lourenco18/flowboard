@@ -3,23 +3,28 @@ import Navbar from "@/components/navbar";
 import { useBoard } from "@/lib/hooks/useBoards";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { use, useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Description, DialogTrigger } from "@radix-ui/react-dialog";
-import { MoreHorizontal, PlusIcon } from "lucide-react";
-import { SelectLabel } from "@/components/ui/select";
-import { ColumnWithTasks } from "@/lib/supabse/models";
-import { create } from "domain";
-function Column({
+import { DialogTrigger } from "@radix-ui/react-dialog";
+import { Calendar, MoreHorizontal, PlusIcon, User } from "lucide-react";
+import { ColumnWithTasks, Task } from "@/lib/supabse/models";
+
+import { Card, CardContent } from "@/components/ui/card";
+
+import { DndContext, useDroppable } from "@dnd-kit/core";
+import { SortableContext } from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+
+function DroppableColumn({
     column,
     children,
     onCreateTask,
-    onEditColumn,
+
 
 }: {
     column: ColumnWithTasks;
@@ -28,8 +33,15 @@ function Column({
     onEditColumn: (column: ColumnWithTasks) => void;
 
 }) {
+    const { setNodeRef, itsOver } = useDroppable({
+        id: column.id,
+    });
+    const { id } = useParams<{ id: string }>();
+    const { board } = useBoard(id);
+    const team_id = board?.team_id ?? null;
+    const [newDescription, setNewDescription] = useState("");
     return (
-        <div className="w-full lg:flex-shrink-0 lg:w-80">
+        <div ref={setNodeRef} className={`w-full lg:flex-shrink-0 lg:w-80 ${itsOver ? "bg-blue-50 rounded-lg" : ""}`}   >
             <div className="bg-white rounded-lg shadow-sm border">
                 {/* Column header */}
                 <div className="p-3 sm:p-4 border-b">
@@ -46,10 +58,150 @@ function Column({
                 {/* Column content */}
                 <div className="p-2">
                     {children}
+                    <Dialog>
+                        <DialogTrigger asChild>
+                            <Button variant="ghost" className="w-full mt-3 text-gray-500 hover:text-gray-700">
+                                <PlusIcon className="" />
+                                Add Task
+                            </Button>
+
+                        </DialogTrigger>
+                        <DialogContent className="w-[95vw] max-w-425px mx-auto" aria-describedby={undefined} >
+                            <DialogHeader>
+                                <DialogTitle>Create New Task</DialogTitle>
+                                <p className="text-sm text-gray-600">Add a task to the board</p>
+                            </DialogHeader>
+                            <form className="space-y-4" onSubmit={onCreateTask}>
+                                <div className="space-y-2">
+                                    <Label>
+                                        Title *
+                                    </Label>
+                                    <Input placeholder="Enter task title" id="title" name="title" required />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label htmlFor="description">Description</Label>
+
+                                    <div className="relative">
+                                        <Textarea
+                                            maxLength={200}
+                                            id="description"
+                                            name="description"
+                                            placeholder="Enter Board description"
+                                            required
+                                            value={newDescription}
+                                            onChange={(e) => setNewDescription(e.target.value)}
+                                            className="pr-12 resize-none max-h-40 overflow-y-auto whitespace-pre-wrap break-words break-all"
+
+                                        />
+                                        <span className="absolute bottom-2 right-2 text-xs text-gray-500">
+                                            {newDescription.length}/200
+                                        </span>
+                                    </div>
+                                </div>
+
+                                {team_id !== null && (
+                                    <div>
+                                        <Label>Assignee</Label>
+                                        <Input
+                                            placeholder="Who should do this?"
+                                            id="assignee"
+                                            name="assignee"
+                                            required
+                                        />
+                                    </div>
+                                )}
+
+                                <div className="space-y-2">
+                                    <Label>
+                                        Priority
+                                    </Label>
+                                    <Select name="priority" defaultValue="medium">
+                                        <SelectTrigger>
+                                            <SelectValue>
+
+                                            </SelectValue>
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            {["low", "medium", "high"].map((priority, key) => (
+                                                <SelectItem key={key} value={priority}>
+                                                    {priority.charAt(0).toUpperCase() + priority.slice(1)}
+                                                </SelectItem>
+                                            ))}
+                                        </SelectContent>
+
+                                    </Select>
+
+                                </div>
+
+                                <div className="space-y-2">
+                                    <Label>
+                                        Due Date
+                                    </Label>
+                                    <Input type="date" id="dueDate" name="dueDate" >
+                                    </Input>
+                                </div>
+
+                                <div className="flex justify-end space-x-2 mt-4">
+
+                                    <Button type="submit">
+                                        Create Task
+                                    </Button>
+
+                                </div>
+                            </form>
+                        </DialogContent>
+                    </Dialog>
                 </div>
             </div>
         </div>
     )
+}
+function SortableTask({ task }: { task: Task }) {
+    const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+        id: task.id
+    });
+    const styles = {
+        transform: CSS.Transform.toStringString(),
+        transition,
+        zIndex: isDragging ? 50 : undefined,
+        boxShadow: isDragging ? "0 5px 10px rgba(0,0,0,0.15)" : undefined,
+    }
+    function getPriority(priority: "low" | "medium" | "high"): string {
+        switch (priority) {
+            case "low":
+                return "bg-green-500";
+            case "medium":
+                return "bg-yellow-500";
+            case "high":
+                return "bg-red-500";
+            default:
+                return "bg-gray-500";
+        }
+    }
+    return <div ref={setNodeRef} {...attributes} {...listeners} style={styles} >
+        <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+                <div className="space-y-2 sm:space-y-3">
+                    <div className="flex items-start justify-between">
+                        <h4 className="font-medium text-gray-900 text-sm leading-tight flex-1 min-w-0 p-2">
+                            {task.title}
+                        </h4>
+                    </div>
+
+                    <p className="text-xs text-gray-600 line-clamp-2">{task.description || "No description provided."}</p>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-1 sm:space-x-2 min-w-0">
+                            {task.assignee && <div className="text-xs flex items-center space-x-1 text-gray-500"><User className="h-3 w-3" /> <span className="truncate">{task.assignee}</span></div>}
+                            {task.due_date && <div className="text-xs flex items-center space-x-1 text-gray-500"><Calendar className="h-3 w-3" /> <span className="truncate">{new Date(task.due_date).toLocaleDateString()}</span></div>}
+                        </div>
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getPriority(task.priority)}`} />
+
+                    </div>
+                </div>
+            </CardContent>
+        </Card>
+    </div>
 }
 export default function BoardPage() {
     const { id } = useParams<{ id: string }>();
@@ -250,6 +402,7 @@ export default function BoardPage() {
                 </div>
             </DialogContent>
         </Dialog>
+
         {/* Board content */}
         <main className="container mx-auto px-2 sm:px-4 py-4  sm:py-6 ">
             {/*stats*/}
@@ -358,7 +511,16 @@ export default function BoardPage() {
                 </Dialog>
             </div>
             {/* Columns */}
-            <div className="
+            <DndContext
+            // sensors={} 
+            //onDragEnd={}
+            //onDragOver={}
+            //onDragStart={}
+            //collisionDetection={}
+            >
+
+
+                <div className="
   flex flex-col
   lg:flex-row
   lg:space-x-6
@@ -374,24 +536,29 @@ export default function BoardPage() {
   lg:space-y-0
 ">
 
-                {columns.map((column, key) => (
-                    <Column
-                        key={key}
-                        column={column}
-                        onCreateTask={createTask}
-                        onEditColumn={() => { }}
-                    >
-                        <div className="space-y-3 ">
-                            {column.tasks.map((task, key) => (
-                                <div key={key} className="p-2 mb-2 bg-gray-100 rounded-md shadow-sm">
-                                    {task.title}
-                                </div>
-                            ))}
-                        </div>
-                    </Column>
+                    {columns.map((column, key) => (
+                        <DroppableColumn
+                            key={key}
+                            column={column}
+                            onCreateTask={handleCreateTask}
+                            onEditColumn={() => { }}
+                        >
+                            <SortableContext items={column.tasks.map((task) => task.id)}
+                            //stratwgy{}
+                            >
 
-                ))}
-            </div>
+
+                                <div className="space-y-3 ">
+                                    {column.tasks.map((task, key) => (
+                                        <SortableTask key={key} task={task} />
+                                    ))}
+                                </div>
+                            </SortableContext>
+                        </DroppableColumn>
+
+                    ))}
+                </div>
+            </DndContext>
         </main>
 
     </div>
