@@ -3,7 +3,7 @@ import Navbar from "@/components/navbar";
 import { useBoard } from "@/lib/hooks/useBoards";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useParams } from "next/navigation";
-import { use, useState } from "react";
+import { useState } from "react";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
@@ -19,6 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { DndContext, useDroppable } from "@dnd-kit/core";
 import { SortableContext } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+import { useSortable } from "@dnd-kit/sortable";
 
 function DroppableColumn({
     column,
@@ -33,7 +34,7 @@ function DroppableColumn({
     onEditColumn: (column: ColumnWithTasks) => void;
 
 }) {
-    const { setNodeRef, itsOver } = useDroppable({
+    const { setNodeRef, isOver } = useDroppable({
         id: column.id,
     });
     const { id } = useParams<{ id: string }>();
@@ -41,7 +42,7 @@ function DroppableColumn({
     const team_id = board?.team_id ?? null;
     const [newDescription, setNewDescription] = useState("");
     return (
-        <div ref={setNodeRef} className={`w-full lg:flex-shrink-0 lg:w-80 ${itsOver ? "bg-blue-50 rounded-lg" : ""}`}   >
+        <div ref={setNodeRef} className={`w-full lg:flex-shrink-0 lg:w-80 ${isOver ? "bg-blue-50 rounded-lg" : ""}`}   >
             <div className="bg-white rounded-lg shadow-sm border">
                 {/* Column header */}
                 <div className="p-3 sm:p-4 border-b">
@@ -162,7 +163,7 @@ function SortableTask({ task }: { task: Task }) {
         id: task.id
     });
     const styles = {
-        transform: CSS.Transform.toStringString(),
+        transform: CSS.Transform.toString(transform),
         transition,
         zIndex: isDragging ? 50 : undefined,
         boxShadow: isDragging ? "0 5px 10px rgba(0,0,0,0.15)" : undefined,
@@ -563,3 +564,5 @@ export default function BoardPage() {
 
     </div>
 }
+
+
