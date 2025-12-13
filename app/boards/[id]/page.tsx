@@ -14,12 +14,13 @@ import { DialogTrigger } from "@radix-ui/react-dialog";
 import { Calendar, MoreHorizontal, PlusIcon, User } from "lucide-react";
 import { ColumnWithTasks, Task } from "@/lib/supabse/models";
 
+
 import { Card, CardContent } from "@/components/ui/card";
 
-import { DndContext, useDroppable } from "@dnd-kit/core";
-import { SortableContext } from "@dnd-kit/sortable";
+import { DndContext, DragStartEvent, rectIntersection, useDroppable, DragEndEvent, DragOverEvent, DragOverlay } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useSortable } from "@dnd-kit/sortable";
+
 
 function DroppableColumn({
     column,
@@ -165,8 +166,8 @@ function SortableTask({ task }: { task: Task }) {
     const styles = {
         transform: CSS.Transform.toString(transform),
         transition,
-        zIndex: isDragging ? 50 : undefined,
-        boxShadow: isDragging ? "0 5px 10px rgba(0,0,0,0.15)" : undefined,
+        opacity: isDragging ? 0.5 : 1,
+
     }
     function getPriority(priority: "low" | "medium" | "high"): string {
         switch (priority) {
@@ -204,6 +205,44 @@ function SortableTask({ task }: { task: Task }) {
         </Card>
     </div>
 }
+function TaskOverlay({ task }: { task: Task }) {
+
+    function getPriority(priority: "low" | "medium" | "high"): string {
+        switch (priority) {
+            case "low":
+                return "bg-green-500";
+            case "medium":
+                return "bg-yellow-500";
+            case "high":
+                return "bg-red-500";
+            default:
+                return "bg-gray-500";
+        }
+    }
+    return (
+        <Card className="cursor-pointer hover:shadow-md transition-shadow">
+            <CardContent className="p-3 sm:p-4">
+                <div className="space-y-2 sm:space-y-3">
+                    <div className="flex items-start justify-between">
+                        <h4 className="font-medium text-gray-900 text-sm leading-tight flex-1 min-w-0 p-2">
+                            {task.title}
+                        </h4>
+                    </div>
+
+                    <p className="text-xs text-gray-600 line-clamp-2">{task.description || "No description provided."}</p>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center space-x-1 sm:space-x-2 min-w-0">
+                            {task.assignee && <div className="text-xs flex items-center space-x-1 text-gray-500"><User className="h-3 w-3" /> <span className="truncate">{task.assignee}</span></div>}
+                            {task.due_date && <div className="text-xs flex items-center space-x-1 text-gray-500"><Calendar className="h-3 w-3" /> <span className="truncate">{new Date(task.due_date).toLocaleDateString()}</span></div>}
+                        </div>
+                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${getPriority(task.priority)}`} />
+
+                    </div>
+                </div>
+            </CardContent>
+        </Card>)
+
+}
 export default function BoardPage() {
     const { id } = useParams<{ id: string }>();
     const { board, updateBoard, columns, createRealTask } = useBoard(id);
@@ -213,6 +252,8 @@ export default function BoardPage() {
     const [newDescription, setNewDescription] = useState("");
     const [newColor, setNewColor] = useState("");
     const team_id = board?.team_id ?? null;
+
+    const [activeTask, setActiveTask] = useState<Task | null>(null);
     //function to update board 
     async function handleUpdateBoard(e: React.FormEvent) {
         e.preventDefault();
@@ -263,6 +304,25 @@ export default function BoardPage() {
             await createTask(taskData);
         }
     }
+    function handleDragStart(event: DragStartEvent) {
+        const taskId = event.active.id as string;
+        const task = columns.flatMap((col) => col.tasks).find((task) => task.id === taskId);
+        if (task) {
+            setActiveTask(task);
+        }
+    }
+    function handleDragOver(event: DragOverEvent) {
+        const { active, over } = event;
+        if (!over) return;
+        const activeID = active.id as string;
+        const overID = over.id as string;
+
+
+    }
+    function handleDragEnd(event: DragEndEvent) {
+
+    }
+
     return <div className="min-h-screen bg-gray-50">
         {/* navbar */}
         <Navbar boardTitle={board?.title} oneEditBoard={() => {
@@ -513,11 +573,11 @@ export default function BoardPage() {
             </div>
             {/* Columns */}
             <DndContext
-            // sensors={} 
-            //onDragEnd={}
-            //onDragOver={}
-            //onDragStart={}
-            //collisionDetection={}
+                //sensors={} 
+                onDragEnd={handleDragEnd}
+                onDragOver={handleDragOver}
+                onDragStart={handleDragStart}
+                collisionDetection={rectIntersection}
             >
 
 
@@ -545,7 +605,7 @@ export default function BoardPage() {
                             onEditColumn={() => { }}
                         >
                             <SortableContext items={column.tasks.map((task) => task.id)}
-                            //stratwgy{}
+                                strategy={verticalListSortingStrategy}
                             >
 
 
@@ -558,6 +618,9 @@ export default function BoardPage() {
                         </DroppableColumn>
 
                     ))}
+                    <DragOverlay>
+                        {activeTask ? <TaskOverlay task={activeTask} /> : null}
+                    </DragOverlay>
                 </div>
             </DndContext>
         </main>
