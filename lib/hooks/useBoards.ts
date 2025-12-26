@@ -1,4 +1,4 @@
-import { error } from "console";
+
 import { boardDataService, boardService, taskService } from "../services";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useState } from "react";
@@ -123,6 +123,6 @@ export function useBoard(boardId: string) {
 
     }
     return {
-        board, columns, loading, error, updateBoard, createRealTask
+        board, columns, loading, error, updateBoard, createRealTask, setColumns
     };
 }

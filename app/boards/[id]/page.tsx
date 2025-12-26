@@ -17,9 +17,11 @@ import { ColumnWithTasks, Task } from "@/lib/supabse/models";
 
 import { Card, CardContent } from "@/components/ui/card";
 
-import { DndContext, DragStartEvent, rectIntersection, useDroppable, DragEndEvent, DragOverEvent, DragOverlay } from "@dnd-kit/core";
+import { DndContext, DragStartEvent, rectIntersection, useDroppable, DragEndEvent, DragOverEvent, DragOverlay, useSensors, PointerSensor, useSensor } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
+
+
 
 
 function DroppableColumn({
@@ -245,7 +247,7 @@ function TaskOverlay({ task }: { task: Task }) {
 }
 export default function BoardPage() {
     const { id } = useParams<{ id: string }>();
-    const { board, updateBoard, columns, createRealTask } = useBoard(id);
+    const { board, updateBoard, columns, createRealTask, setColumns } = useBoard(id);
     const [isEditingTitle, setIsEditingTitle] = useState(false);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [newTitle, setNewTitle] = useState("");
@@ -254,6 +256,13 @@ export default function BoardPage() {
     const team_id = board?.team_id ?? null;
 
     const [activeTask, setActiveTask] = useState<Task | null>(null);
+    const sensors = useSensors(useSensor(
+        PointerSensor, {
+        activationConstraint: {
+            distance: 8,
+        },
+
+    }))
     //function to update board 
     async function handleUpdateBoard(e: React.FormEvent) {
         e.preventDefault();
@@ -316,11 +325,63 @@ export default function BoardPage() {
         if (!over) return;
         const activeID = active.id as string;
         const overID = over.id as string;
+        const sourceColumn = columns.find((col) => col.tasks.some((task) => task.id === activeID));
+        const targetColumn = columns.find((col) => col.id === overID);
+        if (!sourceColumn || !targetColumn) return;
 
+        if (sourceColumn.id === targetColumn.id) {
+            const activeIndex = sourceColumn.tasks.findIndex((task) => task.id === activeID);
+            const overIndex = targetColumn.tasks.findIndex((task) => task.id === overID);
+            if (activeIndex !== overIndex) {
+                setColumns((prev: ColumnWithTasks[]) => {
+                    const newColumns = [...prev];
+                    const column = newColumns.find((col) => col.id === sourceColumn.id);
+                    if (column) {
+                        const tasks = [...column.tasks]
+                        const [removed] = tasks.splice(activeIndex, 1);
+                        tasks.splice(overIndex, 0, removed);
+                        column.tasks = tasks;
 
+                    }
+                    return newColumns;
+                });
+            }
+        }
     }
-    function handleDragEnd(event: DragEndEvent) {
 
+    function handleDragEnd(event: DragEndEvent) {
+        const { active, over } = event;
+        if (!over) return;
+        const taskID = active.id as string;
+        const overID = over.id as string;
+
+        const targetColumn = columns.find((col) => col.id === overID);
+        if (targetColumn) {
+            const activeIndex = sourceColumn.tasks.findIndex((task) => task.id === activeID);
+
+        } else {
+
+        }
+
+        setColumns((prev: ColumnWithTasks[]) => {
+            const newColumns = prev.map((col) => {
+                const tasks = col.tasks.filter((task) => task.id !== taskID);
+                return { ...col, tasks };
+            });
+
+            const taskToMove = columns
+                .flatMap((col) => col.tasks)
+                .find((task) => task.id === taskID);
+
+            if (taskToMove) {
+                const columnIndex = newColumns.findIndex((col) => col.id === targetColumn.id);
+                newColumns[columnIndex].tasks.push(taskToMove);
+            }
+
+            return newColumns;
+        });
+
+        setActiveTask(null);
     }
 
     return <div className="min-h-screen bg-gray-50">
@@ -573,7 +634,7 @@ export default function BoardPage() {
             </div>
             {/* Columns */}
             <DndContext
-                //sensors={} 
+                sensors={sensors}
                 onDragEnd={handleDragEnd}
                 onDragOver={handleDragOver}
                 onDragStart={handleDragStart}
